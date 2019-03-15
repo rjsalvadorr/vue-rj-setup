@@ -1,15 +1,13 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
+    <input type="text" id="searchString" name="searchString" v-model="searchString" v-on:input="searchChange" />
     <p>
       This makes an API call to https://jsonplaceholder.typicode.com/posts and
       displays the results.
     </p>
     <hr />
-    <article v-for="post in posts" :key="post.id">
-      <h2>{{ post.title }}</h2>
-      <p>{{ post.body }}</p>
-    </article>
+    <img v-bind:src="image_url"/>
   </div>
 </template>
 
@@ -24,18 +22,44 @@ export default {
   data() {
     return {
       isLoading: true,
-      posts: []
+      image_url: '',
+      searchString: 'init',
+      mostRecentRequestTime: 0,
     };
   },
   created() {
-    FetchHandler.getPosts()
-      .then(postData => {
-        this.posts = postData;
+    FetchHandler.getImage()
+      .then(imgData => {
+        this.image_url = imgData.data.image_url;
       })
       .catch(err => console.log(err))
       .finally(() => {
         this.isLoading = false;
       });
+  },
+  methods: {
+    searchChange: function(param) {
+      this.mostRecentRequestTime = Date.now();
+      this.doSearch(this.searchString, this.mostRecentRequestTime);
+    },
+    doSearch: function(searchString, requestTimestamp) {
+      FetchHandler.getImage(searchString, requestTimestamp)
+      .then(imgData => {
+        const timestampIdx = imgData.request.responseURL.search(/timestamp=\d+/);
+        const timestamp = imgData.request.responseURL.slice(timestampIdx + 10);
+
+        if(timestamp >= this.mostRecentRequestTime) {
+          this.image_url = imgData.data.image_url;
+        }
+      })
+      .catch(err => {
+        console.log(JSON.stringify(err, null, 2));
+        this.doSearch(searchString, requestTimestamp);
+      });
+    },
+    testy: function(param) {
+      console.log('yep!');
+    }
   }
 };
 </script>

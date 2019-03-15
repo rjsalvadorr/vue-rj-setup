@@ -1,14 +1,14 @@
 import axios from "axios";
 
 class FetchHandler {
-  static getPosts() {
-    return this.get("https://jsonplaceholder.typicode.com/posts", {})
-      .then(postData => {
-        return postData.data;
-      })
-      .catch(err => {
-        throw Error(err.message);
-      });
+  static getImage(queryParam = 'thingy', reqTimestamp) {
+    return this.get("https://imagesearch.dev.tophat.com/", {
+      query: queryParam,
+      timestamp: reqTimestamp,
+    })
+    .then(imgData => {
+      return imgData;
+    })
   }
   static get(endpoint, parameters) {
     return axios.get(endpoint, { params: parameters });
